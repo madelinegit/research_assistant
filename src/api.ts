@@ -56,6 +56,15 @@ function isCommunityEndpoint(endpoint: string): boolean {
   return /\/llm\/(uncensored_chat|chat)\b/.test(endpoint);
 }
 
+/**
+ * A root-relative endpoint (e.g. "/api/chat") means our own server is proxying:
+ * it holds the API key and attaches the auth header itself, so the browser
+ * neither needs nor receives one.
+ */
+export function isProxyEndpoint(endpoint: string): boolean {
+  return endpoint.trim().startsWith('/');
+}
+
 /** Does an error body look like an auth / invalid-key rejection? */
 function looksLikeAuthError(text: string): boolean {
   const t = text.toLowerCase();
@@ -97,7 +106,10 @@ function looksLikeContextLimit(status: number, text: string): boolean {
 export async function sendChat(params: ChatParams): Promise<string> {
   const { endpoint, apiKey, model, maxTokens, temperature, messages } = params;
 
-  if (!apiKey.trim()) {
+  const proxied = isProxyEndpoint(endpoint);
+
+  // In proxy mode the server supplies the key, so a missing local one is fine.
+  if (!proxied && !apiKey.trim()) {
     throw new ChatError('no_key', 'No API key set.');
   }
 
@@ -113,7 +125,10 @@ export async function sendChat(params: ChatParams): Promise<string> {
   };
   if (model.trim()) body.model = model.trim();
 
-  if (community) {
+  if (proxied) {
+    // Our server attaches the credential; the session cookie authorises us.
+    // Deliberately send nothing key-shaped here.
+  } else if (community) {
     // Community endpoint: key travels in the body.
     body.key = apiKey;
   } else {
@@ -127,6 +142,9 @@ export async function sendChat(params: ChatParams): Promise<string> {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
+      // Explicit rather than relying on the default: the proxy is gated by the
+      // session cookie, so it must ride along.
+      credentials: proxied ? 'same-origin' : 'omit',
     });
   } catch (e) {
     throw new ChatError(

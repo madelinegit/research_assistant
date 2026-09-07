@@ -171,6 +171,64 @@ app.use((req, res, next) => {
   res.redirect('/login');
 });
 
+// --- ModelsLab proxy -------------------------------------------------------
+// Optional. Set MODELSLAB_API_KEY in Railway and the browser never handles the
+// key at all: it stays in this process, and the app posts to /api/chat instead
+// of calling modelslab.com directly.
+//
+// Preferred over setting EXPO_PUBLIC_MODELSLAB_KEY, which would inline the key
+// into the JS bundle. Even gated behind the login that's worse — the key gets
+// baked into a build artifact (so rotating it needs a full rebuild) and any
+// future weakening of the gate would expose it. Here, rotating is one variable
+// change and a restart.
+//
+// These routes sit below the gate, so an unauthenticated request can't use the
+// key as an open relay.
+const MODELSLAB_API_KEY = process.env.MODELSLAB_API_KEY || '';
+const MODELSLAB_ENDPOINT =
+  process.env.MODELSLAB_ENDPOINT ||
+  'https://modelslab.com/api/uncensored-chat/v1/chat/completions';
+
+// Lets the client discover at runtime that it doesn't need a key in Settings.
+app.get('/api/config', (req, res) => {
+  res.set('Cache-Control', 'no-store').json({ proxy: Boolean(MODELSLAB_API_KEY) });
+});
+
+// Full-context replay means payloads grow with the conversation; the default
+// 100kb body limit would start rejecting sends partway through a long thread.
+app.post('/api/chat', express.json({ limit: '25mb' }), async (req, res) => {
+  if (!MODELSLAB_API_KEY) {
+    return res.status(503).json({
+      error: {
+        message:
+          'This server has no MODELSLAB_API_KEY set. Add it in Railway, or ' +
+          'paste a key into Settings to call ModelsLab directly.',
+      },
+    });
+  }
+  try {
+    const upstream = await fetch(MODELSLAB_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${MODELSLAB_API_KEY}`,
+      },
+      body: JSON.stringify(req.body),
+    });
+    // Pass the response through untouched so the client's existing error
+    // handling (auth / context-limit / server) keeps working unchanged.
+    const text = await upstream.text();
+    res
+      .status(upstream.status)
+      .type(upstream.headers.get('content-type') || 'application/json')
+      .send(text);
+  } catch {
+    res
+      .status(502)
+      .json({ error: { message: 'Could not reach ModelsLab from the server.' } });
+  }
+});
+
 // --- Static app ------------------------------------------------------------
 app.use(
   express.static(DIST, {

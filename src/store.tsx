@@ -18,6 +18,7 @@ import {
   DEFAULT_MAX_TOKENS,
   DEFAULT_MODEL,
   DEFAULT_SEARCH_PROVIDER,
+  PROXY_ENDPOINT,
   DEFAULT_SYSTEM_PROMPT,
   DEFAULT_TEMPERATURE,
 } from './constants';
@@ -151,6 +152,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       });
       setMessages(await getAllMessages());
       setReady(true);
+
+      // If our own server holds the key (MODELSLAB_API_KEY on Railway), route
+      // through it so the key never reaches this browser. Only when the owner
+      // hasn't chosen an endpoint themselves — an explicit setting always wins.
+      // On the Expo dev server there is no /api/config, so this quietly fails
+      // and the app keeps calling ModelsLab directly.
+      if (endpoint == null) {
+        try {
+          const r = await fetch('/api/config', { credentials: 'same-origin' });
+          if (r.ok && (await r.json())?.proxy === true) {
+            setSettings((prev) => ({ ...prev, endpoint: PROXY_ENDPOINT }));
+          }
+        } catch {
+          // No proxy available; DEFAULT_ENDPOINT stays in effect.
+        }
+      }
     })();
   }, []);
 

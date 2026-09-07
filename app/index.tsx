@@ -25,7 +25,7 @@ import { ContextMeter } from '../src/ContextMeter';
 import { useKeyboardInset } from '../src/useKeyboardInset';
 import { contextFraction } from '../src/tokens';
 import { CONTEXT_WARN_THRESHOLD } from '../src/constants';
-import { ChatError } from '../src/api';
+import { ChatError, isProxyEndpoint } from '../src/api';
 import { StorageFullError } from '../src/storageError';
 import { exportChatToPdf } from '../src/exportPdf';
 import type { Message } from '../src/db';
@@ -239,7 +239,7 @@ export default function ChatScreen() {
             ready ? (
               <View style={styles.empty}>
                 <Text style={[styles.emptyText, { color: theme.subtle }]}>
-                  {settings.apiKey
+                  {settings.apiKey || isProxyEndpoint(settings.endpoint)
                     ? 'Say something to start the conversation.'
                     : 'Add your ModelsLab API key in Settings to begin.'}
                 </Text>

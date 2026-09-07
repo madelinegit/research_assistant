@@ -17,6 +17,11 @@ export const DEFAULT_SYSTEM_PROMPT =
 export const DEFAULT_ENDPOINT =
   'https://modelslab.com/api/uncensored-chat/v1/chat/completions';
 
+// Same-origin path served by server.js. When the deployed server has a
+// MODELSLAB_API_KEY set, the app switches to this automatically (see store.tsx)
+// so the key stays on the server and never reaches the browser at all.
+export const PROXY_ENDPOINT = '/api/chat';
+
 // Chosen model (brief §8). Required by the OpenAI-compatible endpoint.
 export const DEFAULT_MODEL = 'ModelsLab/Llama-3.1-8b-Uncensored-Dare';
 

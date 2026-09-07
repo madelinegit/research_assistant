@@ -45,9 +45,23 @@ npm run serve     # run the production server locally (reads .env.local)
    |----------|-------|
    | `AUTH_USER` | your login email |
    | `AUTH_PASS` | your password |
+   | `MODELSLAB_API_KEY` | *(optional)* your ModelsLab key — see below |
 
    `PORT` is injected by Railway. **Do not** set `EXPO_PUBLIC_MODELSLAB_KEY` —
    see Security below.
+
+### Letting the server hold the API key
+
+Set `MODELSLAB_API_KEY` and you never paste a key into Settings on any device.
+The app detects it via `GET /api/config` at startup and posts to `/api/chat`
+instead of calling modelslab.com directly; `server.js` attaches the credential.
+The browser never receives the key.
+
+`MODELSLAB_ENDPOINT` overrides the upstream URL if you ever need a different one.
+
+Both `/api/config` and `/api/chat` sit below the login gate, so the key can't be
+used as an open relay. Leave `MODELSLAB_API_KEY` unset and nothing changes — the
+app asks for a key in Settings and calls ModelsLab directly from the browser.
 3. **Settings → Networking → Generate Domain** to get your URL.
 
 If `AUTH_USER` or `AUTH_PASS` is missing the server exits instead of booting, so
