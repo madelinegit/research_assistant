@@ -1,5 +1,32 @@
 {
   "enabledPlugins": {
     "expo@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npx expo:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx create-expo-app:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npm audit:*)",
+      "Bash(node:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(rm -rf dist)",
+      "Bash(rm -rf dist/*)",
+      "Bash(rm -f:*)",
+      "Bash(mkdir:*)",
+      "Bash(echo:*)",
+      "Bash(grep:*)",
+      "Bash(tail:*)",
+      "Bash(head:*)",
+      "Read",
+      "Edit",
+      "Write",
+      "WebFetch",
+      "WebSearch",
+      "TodoWrite"
+    ]
   }
 }

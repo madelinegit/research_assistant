@@ -5,7 +5,9 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "scheme": "mlabllm",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
@@ -19,7 +21,27 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "static",
+      "name": "ModelsLab Chat",
+      "shortName": "Chat",
+      "display": "standalone",
+      "orientation": "portrait",
+      "themeColor": "#0a84ff",
+      "backgroundColor": "#ffffff",
+      "startUrl": "/",
+      "scope": "/",
+      "description": "A personal full-context chatbot for the ModelsLab Uncensored Chat API."
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-secure-store",
+      "expo-sharing"
+    ],
+    "experiments": {
+      "typedRoutes": true
     }
   }
 }
