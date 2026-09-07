@@ -33,8 +33,12 @@ npm run serve     # run the production server locally (reads .env.local)
 1. Push this repo to GitHub, then **New Project → Deploy from GitHub repo** in
    Railway. [`railway.json`](railway.json) supplies the build and start commands,
    so there is nothing to configure there.
-   - Make sure **`package-lock.json` is committed** — the build runs `npm ci`,
-     which fails without it.
+   - Dependency install is left to Nixpacks. Don't add `npm ci` to the build
+     command: Nixpacks mounts a build cache inside `node_modules/`, and `npm ci`
+     wipes `node_modules` — it then can't remove the live mount point and the
+     build dies with `EBUSY`.
+   - `.nvmrc` pins Node 22. Railway otherwise defaults to Node 18, which is below
+     the `>=20.19.4` that Expo 57 / React Native 0.86 require.
 2. In the service's **Variables** tab, add:
 
    | Variable | Value |

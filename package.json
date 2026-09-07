@@ -37,5 +37,8 @@
     "serve": "node --env-file-if-exists=.env.local server.js",
     "start": "node server.js"
   },
+  "engines": {
+    "node": ">=20.19.4"
+  },
   "private": true
 }
