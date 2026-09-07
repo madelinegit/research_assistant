@@ -21,6 +21,7 @@ import {
 import { useStore } from '../src/store';
 import { getTheme, type Theme } from '../src/theme';
 import { DEFAULT_SYSTEM_PROMPT } from '../src/constants';
+import { isProxyEndpoint } from '../src/api';
 
 export default function SettingsScreen() {
   const theme = getTheme(useColorScheme());
@@ -129,8 +130,9 @@ export default function SettingsScreen() {
         {/* API key */}
         <Text style={s.sectionTitle}>ModelsLab API key</Text>
         <Text style={s.help}>
-          Stored securely on this device only. Never leaves except in API
-          requests to ModelsLab.
+          {isProxyEndpoint(settings.endpoint)
+            ? 'Not needed — this server holds the key and adds it to each request, so nothing to paste here. Anything you enter below would override that for this browser only.'
+            : 'Stored securely on this device only. Never leaves except in API requests to ModelsLab.'}
         </Text>
         <View style={s.keyRow}>
           <TextInput

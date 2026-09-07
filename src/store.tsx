@@ -158,7 +158,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       // hasn't chosen an endpoint themselves — an explicit setting always wins.
       // On the Expo dev server there is no /api/config, so this quietly fails
       // and the app keeps calling ModelsLab directly.
-      if (endpoint == null) {
+      // Also upgrade a saved-but-default endpoint: merely opening Settings and
+      // hitting Save persists the default, which would otherwise permanently
+      // opt this browser out of the proxy. Only a genuinely custom endpoint
+      // suppresses the probe.
+      if (endpoint == null || endpoint === DEFAULT_ENDPOINT) {
         try {
           const r = await fetch('/api/config', { credentials: 'same-origin' });
           if (r.ok && (await r.json())?.proxy === true) {
